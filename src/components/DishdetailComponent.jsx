@@ -35,7 +35,11 @@ const DishDetail = (props) => {
         </div>
         <div className="row">
           <RenderDish dish={props.dish} />
-          <RenderComments comments={props.comments} />
+          <RenderComments
+            comments={props.comments}
+            addComment={props.addComment}
+            dishId={props.dish.id}
+          />
           {/* CommentForm inside RenderComments */}
         </div>
       </div>
@@ -45,8 +49,8 @@ const DishDetail = (props) => {
   }
 };
 
-const RenderComments = (comments) => {
-  const card = comments.comments.map((comment) => {
+const RenderComments = (props) => {
+  const card = props.comments.map((comment) => {
     return (
       <div key={comment.id}>
         <ul className="list-unstyled">
@@ -69,7 +73,7 @@ const RenderComments = (comments) => {
     <div className="col-12 col-md-5 m-1">
       <h4>Comments</h4>
       {card}
-      <CommentForm></CommentForm>
+      <CommentForm dishId={props.dishId} addComment={props.addComment} />
     </div>
   );
 };
@@ -109,8 +113,12 @@ class CommentForm extends Component {
 
   handleSubmit = (values) => {
     this.toggleModal();
-    console.log("Current State is: " + JSON.stringify(values));
-    alert("Current State is: " + JSON.stringify(values));
+    this.props.addComment(
+      this.props.dishId,
+      values.rating,
+      values.author,
+      values.comment
+    );
   };
 
   render() {
