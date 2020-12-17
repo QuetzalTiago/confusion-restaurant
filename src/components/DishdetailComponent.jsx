@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { FadeTransform, Fade, Stagger } from "react-animation-components";
 import {
   Card,
   CardImg,
@@ -14,11 +15,29 @@ import {
   Label,
   Row,
 } from "reactstrap";
+import { Loading } from "./LoadingComponent";
 import { Control, LocalForm, Errors } from "react-redux-form";
 import { Link } from "react-router-dom";
+import { baseUrl } from "../shared/baseUrl";
 
 const DishDetail = (props) => {
-  if (props.dish != null) {
+  if (props.isLoading) {
+    return (
+      <div className="container">
+        <div className="row">
+          <Loading />
+        </div>
+      </div>
+    );
+  } else if (props.errMess) {
+    return (
+      <div className="container">
+        <div className="row">
+          <h4>{props.errMess}</h4>
+        </div>
+      </div>
+    );
+  } else if (props.dish != null) {
     return (
       <div className="container">
         <div className="row">
@@ -37,7 +56,7 @@ const DishDetail = (props) => {
           <RenderDish dish={props.dish} />
           <RenderComments
             comments={props.comments}
-            addComment={props.addComment}
+            postComment={props.postComment}
             dishId={props.dish.id}
           />
           {/* CommentForm inside RenderComments */}
@@ -54,7 +73,11 @@ const RenderComments = (props) => {
     return (
       <div key={comment.id}>
         <ul className="list-unstyled">
-          <li> {comment.comment} </li>
+          <Stagger in>
+            <li>
+              <Fade in> {comment.comment}</Fade>{" "}
+            </li>
+          </Stagger>
         </ul>
         <ul className="list-unstyled">
           <li>
@@ -69,11 +92,12 @@ const RenderComments = (props) => {
       </div>
     );
   });
+
   return (
     <div className="col-12 col-md-5 m-1">
       <h4>Comments</h4>
       {card}
-      <CommentForm dishId={props.dishId} addComment={props.addComment} />
+      <CommentForm dishId={props.dishId} postComment={props.postComment} />
     </div>
   );
 };
@@ -83,13 +107,20 @@ const RenderDish = (dish) => {
     dish = dish.dish;
     return (
       <div className="col-12 col-md-5 m-1">
-        <Card>
-          <CardImg src={dish.image} alt={dish.name}></CardImg>
-          <CardBody>
-            <CardTitle tag="h4">{dish.name}</CardTitle>
-            <CardText>{dish.description}</CardText>
-          </CardBody>
-        </Card>
+        <FadeTransform
+          in
+          transformProps={{
+            exitTransform: "scale(0.5) translateY(-50%)",
+          }}
+        >
+          <Card>
+            <CardImg top src={baseUrl + dish.image} alt={dish.name} />
+            <CardBody>
+              <CardTitle>{dish.name}</CardTitle>
+              <CardText>{dish.description}</CardText>
+            </CardBody>
+          </Card>
+        </FadeTransform>
       </div>
     );
   } else {
@@ -113,7 +144,7 @@ class CommentForm extends Component {
 
   handleSubmit = (values) => {
     this.toggleModal();
-    this.props.addComment(
+    this.props.postComment(
       this.props.dishId,
       values.rating,
       values.author,
